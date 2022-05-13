@@ -14,7 +14,7 @@ type TasksStateType = {
     [key: string]: Array<TaskPropsType>
 }
 
-export const App = () => {
+const App = () => {
 
 
     let todolistId1 = v1()
@@ -100,6 +100,7 @@ export const App = () => {
     );
 }
 
+export default App;
 
 
 
