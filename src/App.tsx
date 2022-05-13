@@ -4,8 +4,7 @@ import {TaskPropsType, Todolist} from "./Todolist";
 import {v1} from "uuid";
 
 export type FilterValuesType = "all" | "completed" | "active"
-
-type TodolistType = {
+export type TodolistType = {
     id: string
     title: string
     filter: FilterValuesType
@@ -15,54 +14,16 @@ type TasksStateType = {
     [key: string]: Array<TaskPropsType>
 }
 
-const App = () => {
+export const App = () => {
 
-    const removeTask = (id: string, todolistId: string) => {
-        let todolistTasks = tasks[todolistId]
-        tasks[todolistId] = todolistTasks.filter(t => t.id !== id)
-        setTasks({...tasks})
-    }
-
-    const addTask = (title: string, todolistId: string) => {
-        let newTask = {id: v1(), title: title, isDone: false}
-        let newTasks = tasks[todolistId]
-        tasks[todolistId] = [newTask, ...newTasks]
-        setTasks({...tasks})
-    }
-
-    const changeFilter = (value: FilterValuesType, todolistId: string) => {
-        let todolist = todolists.find(tl => tl.id === todolistId)
-        if (todolist) {
-            todolist.filter = value
-            setTodolists([...todolists])
-        }
-    }
-
-    const changeStatus = (taskId: string, isDone: boolean, todolistId: string) => {
-        let todolistTasks = tasks[todolistId]
-        let task = todolistTasks.find(t => t.id === taskId)
-        if (task) {
-            task.isDone = isDone
-        }
-
-        setTasks({...tasks})
-    }
 
     let todolistId1 = v1()
     let todolistId2 = v1()
 
     let [todolists, setTodolists] = useState<Array<TodolistType>>([
-        {id: todolistId1, title: "What to learn", filter: "active"},
-        {id: todolistId2, title: "What to buy", filter: "completed"}
+        {id: todolistId1, title: "What to learn", filter: "all"},
+        {id: todolistId2, title: "What to buy", filter: "all"}
     ])
-
-    let removeTodolist = (todolistId: string) => {
-        let filteredTodolist = todolists.filter(tl => tl.id !== todolistId)
-        setTodolists(filteredTodolist)
-        delete tasks[todolistId]
-        setTasks({...tasks})
-    }
-
     let [tasks, setTasks] = useState<TasksStateType>({
         [todolistId1]: [
             {id: v1(), title: "HTML&CSS", isDone: true},
@@ -80,6 +41,29 @@ const App = () => {
         ]
     })
 
+    let removeTodolist = (todolistId: string) => {
+        setTodolists(todolists.filter(tl=>tl.id !== todolistId))
+        delete tasks[todolistId]
+    }
+
+    const removeTask = (todolistId: string, taskId: string) => {
+        setTasks({...tasks, [todolistId]: tasks[todolistId].filter(t => t.id !== taskId)})
+    }
+
+    const addTask = (todolistId: string, title: string) => {
+        let newTask = {id: v1(), title: title, isDone: false}
+        setTasks({...tasks, [todolistId]: [newTask, ...tasks[todolistId]]})
+    }
+
+    const changeFilter = (todolistId: string, value: FilterValuesType) => {
+        setTodolists(todolists.map(tl => tl.id === todolistId ? {...tl, filter: value} : tl))
+    }
+
+    const changeStatus = (todolistId: string, taskId: string, isDone: boolean) => {
+        setTasks({...tasks, [todolistId]: tasks[todolistId].map(st => st.id === taskId ? {...st, isDone} : st)})
+    }
+
+
     return (
         <div className="App">
             {
@@ -88,16 +72,16 @@ const App = () => {
                     let tasksForTodolist = tasks[tl.id];
 
                     if (tl.filter === "completed") {
-                        tasksForTodolist = tasksForTodolist.filter(t => t.isDone)
+                        tasksForTodolist = tasks[tl.id].filter(t => t.isDone)
                     }
                     if (tl.filter === "active") {
-                        tasksForTodolist = tasksForTodolist.filter(t => !t.isDone)
+                        tasksForTodolist = tasks[tl.id].filter(t => !t.isDone)
                     }
 
                     return (
                         <Todolist
                             key={tl.id}
-                            id={tl.id}
+                            todolistId={tl.id}
                             title={tl.title}
                             tasks={tasksForTodolist}
                             removeTask={removeTask}
@@ -116,7 +100,6 @@ const App = () => {
     );
 }
 
-export default App;
 
 
 
